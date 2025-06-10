@@ -12,8 +12,8 @@ from transformers import (
 from sklearn.preprocessing import LabelEncoder
 
 # === 1. Load data ===
-train_df = pd.read_csv("C:/Users/91863/travis/data/csv_exported/train_data.csv")
-val_df = pd.read_csv("C:/Users/91863/travis/data/csv_exported/val_data.csv")
+train_df = pd.read_csv("/content/train_data.csv")
+val_df = pd.read_csv("/content/val_data.csv")
 
 # Encode labels
 label_encoder = LabelEncoder()
