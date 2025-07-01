@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VIBAnk - Travis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- React & Tailwind -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="bg-white">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useRef } = React;
+
+      const Header = () => (
+        <header className="flex justify-between items-center p-6 bg-white shadow relative">    
+          <div className="text-2xl font-bold">🏦 VIBank</div>
+          <nav className="flex space-x-6 relative">
+            <details className="group relative">
+              <summary className="cursor-pointer text-gray-700 font-medium">Services</summary>
+              <ul className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg opacity-0 group-hover:opacity-100 transition duration-300 ease-in-out z-10">
+                <li><a href="#chatbot" className="block px-4 py-2 hover:bg-gray-100">Chatbot Interaction</a></li>
+                <li><a href="#speaker" className="block px-4 py-2 hover:bg-gray-100">Speaker Interaction</a></li>
+              </ul> 
+            </details>
+
+            <details className="group relative">
+              <summary className="cursor-pointer text-gray-700 font-medium">About</summary>
+              <ul className="absolute right-0 mt-10 w-60 bg-white border border-gray-200 rounded shadow-lg opacity-0 group-hover:opacity-100 transition duration-300 ease-in-out z-10">
+                <li><a href="#about" className="block px-4 py-2 hover:bg-gray-100">Helps visually impaired banking service agents to interact with customers easily</a></li>
+              </ul>
+            </details>
+          </nav>
+        </header>
+      );
+
+      const sanitizeInput = (text) => {
+        return text
+          .toLowerCase()
+          .trim()
+          .replace(/ dot /g, ".")
+          .replace(/\s/g, "")
+          .replace(/[.,;:!?]+$/, "");
+      };
+
+      const LoginModal = ({ onClose, onLogin }) => {
+        const emailRef = useRef();
+        const passwordRef = useRef();
+
+        const handleVoiceLogin = () => {
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (!SpeechRecognition) {
+            alert("Voice recognition not supported in this browser.");
+            return;
+          }
+
+          let step = "email";
+          const recognition = new SpeechRecognition();
+          recognition.lang = "en-US";
+          recognition.interimResults = false;
+
+          recognition.onresult = (event) => {
+            const spokenText = event.results[0][0].transcript;
+            const cleaned = sanitizeInput(spokenText);
+
+            if (step === "email") {
+              emailRef.current.value = cleaned;
+              step = "password";
+              alert("Email captured: " + cleaned + "\nNow speak your password.");
+              setTimeout(() => recognition.start(), 1000);
+            } else {
+              passwordRef.current.value = cleaned;
+              alert("Password captured: " + cleaned);
+            }
+          };
+
+          alert("Speak your email.");
+          recognition.start();
+        };
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          const email = emailRef.current.value;
+          const password = passwordRef.current.value;
+
+          if (email && password) {
+            onLogin();
+          } else {
+            alert("Please enter both email and password.");
+          }
+        };
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm relative">
+              <button className="absolute top-2 right-4 text-gray-500 hover:text-gray-800 text-2xl" onClick={onClose}>&times;</button>
+              <h2 className="text-2xl font-bold text-center mb-6 text-blue-800">Agent Login</h2>
+              <form onSubmit={handleSubmit}>
+                <label className="block text-gray-700 font-medium mb-1">Email</label>
+                <input ref={emailRef} type="email" className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-blue-800" placeholder="agent@gmail.com" required />
+                <label className="block text-gray-700 font-medium mb-1">Password</label>
+                <input ref={passwordRef} type="password" className="w-full px-4 py-2 mb-6 border border-gray-300 rounded-lg focus:outline-blue-500" placeholder="password" required />
+                <p className="text-center text-gray-500 text-sm mb-5">
+                  or <button type="button" onClick={handleVoiceLogin} className="text-blue-600 font-semibold hover:underline">Login with Voice</button>
+                </p>
+                <button type="submit" className="w-full bg-blue-800 text-white py-2 rounded-lg hover:bg-blue-600 transition">Login</button>
+              </form>
+            </div>
+          </div>
+        );
+      };
+
+      const Landing = ({ onSignIn }) => (
+        <div className="flex flex-col min-h-screen">
+          <Header />
+          <main className="flex flex-col-reverse md:flex-row items-center justify-between p-11 gap-10 bg-gradient-to-tr from-blue-50 to-purple-100 flex-1">
+            <div className="max-w-lg space-y-6 text-center md:text-middle">
+              <h1 className="text-5xl font-extrabold text-blue-800">Welcome to VIBank</h1>
+              <p className="text-gray-700 text-xl">AI Assistant for visually impaired banking service agents.
+                This helps visually impaired agents to easily interact with customers making their work easier.</p>
+              <button onClick={onSignIn} className="px-5 py-3 bg-blue-800 text-white text-lg font-semibold rounded-lg hover:bg-blue-600 transition">Sign In</button>
+            </div>
+            <div className="w-full max-w-2xl">
+              <img src="https://softjourn.com/media/ArticlesMN/accessiblefintech/accessibility_for_blind.jpg" alt="Accessibility Illustration" className="rounded-lg w-full object-cover opacity-95 shadow-2xl" />
+            </div>
+          </main>
+          <footer className="text-center text-gray-500 text-sm p-4 bg-white shadow-inner">© 2025 Travis Inc. | All rights reserved</footer>
+        </div>
+      );
+
+      const InteractionChoicePage = ({ onSelect, onBack }) => (
+      <div className="min-h-screen bg-gradient-to-br from-blue-200 to-purple-200 flex items-center justify-center p-6 relative">
+        <div className="absolute top-4 left-6">
+        <button onClick={onBack}className="text-grey-100 text-lg">⬅️ Back</button>
+      </div>
+      <div className="bg-white shadow-2xl rounded-3xl p-10 max-w-xl w-full text-center space-y-6">
+      <h1 className="text-4xl font-bold text-gray-800">Choose Interaction Mode</h1>
+      <p className="text-gray-600 text-lg">Select how you'd like to assist customers today:</p>
+        <div className="flex justify-center gap-6 mt-6">
+          <button onClick={() => onSelect("voice")}className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl text-lg shadow-lg transition-all transform hover:scale-105">🎙 Voice Assistant</button>
+          <button onClick={() => onSelect("chatbot")}className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-lg shadow-lg transition-all transform hover:scale-105">💬 Chatbot</button>
+        </div>
+      </div>
+      </div>
+      );
+
+
+      const Dashboard = ({ onLogout, onBack }) => {
+        const [transcribedText, setTranscribedText] = useState("");
+        const [response, setResponse] = useState("");
+        const [loading, setLoading] = useState(false);
+
+        const simulateFlow = () => {
+          setTranscribedText("Recording…");
+          setResponse("");
+          setLoading(false);
+          setTimeout(() => {
+            setTranscribedText("What is the status of my last transaction?");
+            setLoading(true);
+            setTimeout(() => {
+              setResponse("Your last transaction of ₹3500 to Amazon was successful.");
+              setLoading(false);
+            }, 2000);
+          }, 2000);
+        };
+
+        return (
+          <div className="min-h-screen bg-gradient-to-tr from-purple-200 to-blue-200 flex flex-col justify-center items-center p-6 relative">
+            <div className="absolute top-4 left-6">
+              <button onClick={onBack}className="bg-red-700 hover:bg-red-500 text-white px-3 py-2 rounded-xl text-lg shadow-lg transition-all">⬅️ Back</button>
+            </div>
+            <div className="absolute top-4 right-6">
+              <button onClick={() => {
+                  if (window.confirm("Are you sure you want to logout?")) {onLogout();}
+                }}
+                className="bg-red-700 hover:bg-red-500 text-white px-3 py-2 rounded-xl text-lg shadow-lg transition-all">🔒 Logout</button>
+            </div>
+
+            <div className="bg-white p-10 rounded-3xl shadow-xl text-center w-full max-w-2xl mt-10">
+              <h1 className="text-4xl font-bold text-gray-800 mb-4">🎙 Voice Assistant</h1>
+              <p className="text-lg text-gray-600 mb-6">Empowering visually impaired agents via voice.</p>
+              <button
+                onClick={simulateFlow}
+                className="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-full shadow-lg text-xl transition mb-4">🎙 Tap to Speak
+              </button>
+                <div className="bg-gray-100 p-4 rounded-xl mb-4">{transcribedText || "Speak to see transcript..."}</div>
+              {loading ? (
+                <div className="text-gray-500 animate-pulse">Generating response…</div>
+              ) : (
+                response && (<div className="bg-green-100 text-green-800 p-4 rounded-xl">{response}</div>)
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      const ChatbotPage = ({ onLogout, onBack }) => {
+        const [messages, setMessages] = useState([{ sender: "bot", text: "Hello! How can I help you today?" }]);
+        const [input, setInput] = useState("");
+
+        const handleSend = () => {
+          if (!input.trim()) return;
+          const newMessages = [...messages, { sender: "user", text: input }];
+          setMessages(newMessages);
+          setInput("");
+          setTimeout(() => {
+            setMessages([
+              ...newMessages,
+              { sender: "bot", text: "Thank you for your query. Please wait while I process it." }]);}, 1000);};
+
+        return (
+          <div className="min-h-screen bg-gradient-to-tr from-purple-200 to-blue-200 flex items-center justify-center p-6 relative">
+            <div className="absolute top-4 left-6">
+              <button onClick={onBack}className="bg-red-700 hover:bg-red-500 text-white px-3 py-2 rounded-xl text-lg shadow-lg transition-all">⬅️ Back</button>
+            </div>
+            <div className="absolute top-4 right-6">
+              <button onClick={() => {
+                  if (window.confirm("Are you sure you want to logout?")) {onLogout();}
+                }}
+                className="bg-red-700 hover:bg-red-500 text-white px-3 py-2 rounded-xl text-lg shadow-lg transition-all">🔒 Logout
+              </button>
+            </div>
+
+            <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-8 flex flex-col items-center mt-10">
+              <h1 className="text-3xl font-bold mb-4 text-gray-800">💬 Chatbot Assistant</h1>
+              <div className="w-full h-80 bg-gray-100 p-4 rounded-lg overflow-y-auto mb-4 space-y-2">
+                {messages.map((msg, idx) => (
+                  <div key={idx}
+                    className={`p-3 rounded-xl max-w-xs ${msg.sender === "bot"? "bg-green-100 text-left text-green-900": "bg-blue-100 text-right self-end text-blue-900"}`}>{msg.text}
+                  </div>
+                ))}
+              </div>
+              <div className="flex w-full">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  className="flex-grow p-3 border border-gray-300 rounded-l-lg focus:outline-none"
+                  placeholder="Type your message..."/>
+                <button
+                  onClick={handleSend}
+                  className="bg-blue-600 text-white px-5 py-2 rounded-r-lg hover:bg-blue-700 transition">Send
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const App = () => {
+        const [showLogin, setShowLogin] = useState(false);
+        const [isLoggedIn, setIsLoggedIn] = useState(false);
+        const [interactionMode, setInteractionMode] = useState(null);
+
+        if (!isLoggedIn) {
+          return (
+            <>
+              <Landing onSignIn={() => setShowLogin(true)} />
+              {showLogin && (
+                <LoginModal
+                  onClose={() => setShowLogin(false)}
+                  onLogin={() => {
+                    setIsLoggedIn(true);
+                    setShowLogin(false);
+                  }}/>
+              )}</>);
+            }
+
+        if (!interactionMode)
+          return (<InteractionChoicePage
+            onSelect={setInteractionMode}onBack={() => {
+            setIsLoggedIn(false);
+            setInteractionMode(null);
+          }}/>);
+
+        if (interactionMode === "voice")
+          return <Dashboard onLogout={() => {
+            setIsLoggedIn(false);
+            setInteractionMode(null);
+          }} onBack={() => setInteractionMode(null)} />;
+
+        if (interactionMode === "chatbot")
+          return <ChatbotPage onLogout={() => {
+            setIsLoggedIn(false);
+            setInteractionMode(null);
+          }} onBack={() => setInteractionMode(null)} />;
+        };
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
